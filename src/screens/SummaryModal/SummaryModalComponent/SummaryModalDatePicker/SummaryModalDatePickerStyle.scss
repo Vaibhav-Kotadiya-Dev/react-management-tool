@@ -1,0 +1,40 @@
+.MuiOutlinedInput-adornedEnd {
+  padding: 0;
+  height: 40px;
+  width: 145px;
+  outline: none;
+  border: none;
+  transition: all 100ms;
+  .MuiButtonBase-root {
+    padding: 0 !important;
+  }
+}
+.MuiOutlinedInput-adornedEnd:hover {
+  outline: 1px solid rgba(0, 0, 255, 0.576);
+}
+.date_time_picker_container {
+  display: flex;
+  flex-direction: column;
+
+  &__label{
+    color: #44546F !important;
+  }
+}
+.time_picker {
+  .MuiOutlinedInput-root {
+    height: 40px;
+    width: 120px;
+    .MuiButtonBase-root {
+      padding: 0 !important;
+    }
+  }
+}
+.time_picker {
+  .MuiOutlinedInput-root:hover {
+    outline: 1px solid rgba(0, 0, 255, 0.576);
+  }
+}
+
+.alert_end_date {
+  color: red !important;
+}

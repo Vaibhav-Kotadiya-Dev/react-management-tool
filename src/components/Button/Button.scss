@@ -1,0 +1,16 @@
+.basic-button {
+  border-radius: 8px;
+  border: none;
+  color: #FFFFFF;
+  font-weight: 900;
+  font-size: 1em;
+  outline: none;
+  padding: 13px 23px;
+  background-color: #2574FB;
+  align-items: center;
+  display: flex;
+  text-align: center;
+  &:hover {
+    opacity: 0.8;
+  }
+}

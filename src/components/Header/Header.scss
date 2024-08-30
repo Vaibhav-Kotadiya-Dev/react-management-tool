@@ -1,0 +1,45 @@
+.header {
+  height: 60px;
+  width: 100%;
+  background: #FFFFFF;
+  border: 1px solid #DAE0EB;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  &__line {
+    box-sizing: border-box;
+    height: 24px;
+    width: 1px;
+    margin-right: 23.5px;
+    border: 1px solid #F2F2F2;
+  }
+
+  &__home-button-container{
+    display: flex;
+    align-items: center;
+    margin-right: 16.5px;
+    margin-left: 23px;
+    cursor: pointer;
+
+    &__title {
+      font-weight: bold;
+      font-size: 13px;
+      line-height: 18px;
+      letter-spacing: 0;
+      color: black;
+      margin-left: 7px;
+    }
+
+    &__icon-wrapper {
+      border: 2px solid white;
+      height: 25px;
+      width: 25px;
+
+      &.hovered {
+        border: 2px solid #415eff;
+        border-radius: 6px;
+      }
+    }
+  }
+}

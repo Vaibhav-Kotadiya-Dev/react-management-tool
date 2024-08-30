@@ -1,0 +1,32 @@
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  font-family: 'Roboto', sans-serif;
+  background-color: #f0f0f0;
+  padding: 12px 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.breadcrumb-item {
+  color: #0077b6;
+  padding: 0 10px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: color 0.3s ease;
+
+  &:hover {
+      color: #023e8a;
+  }
+
+  &.current {
+      color: #03045e;
+      font-weight: bold;
+      cursor: default;
+  }
+}
+
+.breadcrumb-separator {
+  color: #adb5bd;
+  font-size: 18px;
+}

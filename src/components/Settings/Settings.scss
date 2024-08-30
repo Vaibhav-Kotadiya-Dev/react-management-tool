@@ -1,0 +1,40 @@
+.link-dropdown {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  padding: 6.56px;
+  box-sizing: border-box;
+  border-radius: 3px;
+
+  &:hover {
+    background: #F2F2F2;
+  }
+
+  &.clicked {
+    background: #DEDEDE !important;
+  }
+}
+
+.settings {
+  margin-right: 20px;
+  span {
+    font-family: Roboto;
+    font-style: normal;
+    font-weight: normal;
+    font-size: 16px;
+    line-height: 24px;
+    text-align: right;
+    color: #2B323B;
+    text-transform: unset !important;
+
+    svg {
+      width: 24px;
+      height: 24px;
+      margin-right: 20px;
+
+      g {
+        fill: #2B323B;
+      }
+    }
+  }
+}
