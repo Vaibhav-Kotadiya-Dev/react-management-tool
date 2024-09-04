@@ -29,11 +29,13 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import CloseIcon from '@mui/icons-material/Close';
 import EditOffIcon from '@mui/icons-material/EditOff';
 import Button from 'components/Button';
+import TicketService from 'services/Ticket'
+import { TicketProps } from 'types/types';
+import { toast } from 'react-toastify';
 
 type props = {
-  locationSlug: string;
-  locationName: string;
-  taskId: string | undefined;
+  ticketId: number | undefined;
+  projectId: number;
   summaryModalStatus?: TASK_SUMMARY_MODAL_STATUS;
   createTaskInitialStatus: TASK_STATUS | undefined;
   setNotificationDetails: Dispatch<SetStateAction<any>>;
@@ -42,12 +44,13 @@ type props = {
 };
 
 function SummaryModal({
-  taskId,
+  ticketId,
   summaryModalStatus,
   setNotificationDetails,
   createTaskInitialStatus,
   handleCloseSummaryModal,
   setSummaryModalStatus,
+  projectId,
 }: props) {
   const descriptionMaxLength = 1000;
   const titleMaxLength = 500;
@@ -62,19 +65,20 @@ function SummaryModal({
     okButtonText: 'Yes',
   });
 
-  const taskSummary = {
-    "id": "895575",
-    "startDate": "2024-06-23T00:07:57.000Z",
-    "title": "Test title",
-    "description": "Test",
-    "endDate": "2024-04-23T00:07:57.000Z",
+  const [ticketSummary, setTicketSummary] = useState<TicketProps>({
+    "id": null,
+    "startDate": null,
+    "title": null,
+    "description": null,
+    "endDate": null,
     "status": "IN_PROGRESS",
-    "projectId": ""
-  };
+    "projectId": null
+  })
+  const [fetchingTicketSummary, setFetchingTicketSummary] = useState<boolean>(false);
 
   function initializer(initializerState = initialCreateEditTaskState) {
-    if (taskSummary?.id) {
-      return formatPreFilledState(taskSummary);
+    if (ticketSummary?.id) {
+      return formatPreFilledState(ticketSummary);
     }
     return {
       ...initializerState,
@@ -96,25 +100,6 @@ function SummaryModal({
 
   async function handleStatusChange(event: React.ChangeEvent<{ value: unknown }>) {
     updateStatusChangeState(event.target.value as TASK_STATUS);
-    try {
-      if (taskId && !!event.target.value) {
-        // API call to update status
-        // const response = await updateTaskStatus({
-        //   variables: {
-        //     taskId: Number(taskId),
-
-        //     status: event.target.value as TASK_STATUS,
-        //     isOwnerCheckSurpassed: true,
-        //   },
-        // });
-        // if (!response.data?.updateTaskStatus?.isSuccess) {
-
-        //   updateStatusChangeState(taskSummary?.status as TASK_STATUS);
-        // }
-      }
-    } catch (error) {
-      console.log('handleStatusChange e', error);
-    }
   }
 
   function toggleDeleteConfirmationModel() {
@@ -123,14 +108,17 @@ function SummaryModal({
   async function deleteTask(id: number) {
     try {
       setDeleteTaskConfirmationModal(prevState => ({ ...prevState, isLoading: true }));
-      // API call to delete task
-      // await deleteTaskMutation({
-      //   variables: {
-      //     taskId: id,
-      //   },
-      // });
-      toggleDeleteConfirmationModel();
-      handleCloseSummaryModal();
+      const response = await TicketService.deleteTicket({ ticketId: ticketId })
+      if (response?.data) {
+        setNotificationDetails({
+          isOpen: true,
+          alertTitle: 'Task',
+          alertDescription: 'Successfully removed',
+          alertType: AlertTypeProps.SUCCESS,
+        });
+        toggleDeleteConfirmationModel();
+        handleCloseSummaryModal();
+      }
     } catch (err) {
       setDeleteTaskConfirmationModal(prevState => ({
         ...prevState,
@@ -140,8 +128,6 @@ function SummaryModal({
       }));
     }
   }
-
-  console.log('summaryModalStatus --> ', summaryModalStatus);
 
   function onCancelButtonClick() {
     handleCloseSummaryModal();
@@ -186,44 +172,80 @@ function SummaryModal({
       alertType: AlertTypeProps.ERROR,
     });
   }
+
+  const fetchTicketSummary = async () => {
+    try {
+      setFetchingTicketSummary(true)
+      const response = await TicketService.fetchTicketSummary({
+        ticketId,
+      })
+      const ticketObj = {
+        id: response?.data?.id,
+        startDate: response?.data?.startDate,
+        title: response?.data?.title,
+        description: response?.data?.description,
+        endDate: response?.data?.endDate,
+        status: response?.data?.status,
+        projectId: response?.data?.projectId
+      }
+      setTicketSummary(ticketObj)
+      setFetchingTicketSummary(false)
+    } catch (error) {
+      toast.error(error?.response?.data?.message);
+      setFetchingTicketSummary(false)
+    }
+  }
+
   async function onSubmitTaskData() {
     try {
       setSavingInProgress(true);
       const payload = ({ ...state } as unknown) as any;
-      if (taskId) {
-        payload.id = taskId;
+      if (ticketId) {
+        payload.id = ticketId;
       }
-      // API to save task
-      // const response = await createEditTask({
-      //   variables: {
-      //     payload: cleanTaskDBPayload(payload),
-      //   },
-      // });
-      // if (response.data?.createEditTask.isSuccess) {
-      //   setNotificationDetails({
-      //     isOpen: true,
-      //     alertTitle: 'Tarea',
-      //     alertDescription: summaryModalStatus === TASK_SUMMARY_MODAL_STATUS.CREATE
-      //       ? 'Tarea ha sido creada con éxito'
-      //       : 'tarea ha sido actualizada con éxito',
-      //     alertType: AlertTypeProps.SUCCESS,
-      //   });
-      // } else {
-      //   createEditFailureNotification();
-      // }
+      let response: any;
+      if (summaryModalStatus === TASK_SUMMARY_MODAL_STATUS.CREATE) {
+        response = await TicketService.createTicket({
+          startDate: state.startDate,
+          title: state.title, 
+          description: state.description,
+          endDate: state.endDate,
+          status: state.status,
+          projectId,
+        })
+      } else {
+        response = await TicketService.updateTicket({
+          startDate: state.startDate,
+          title: state.title, 
+          description: state.description,
+          endDate: state.endDate,
+          status: state.status,
+          projectId,
+          ticketId: ticketId,
+        })
+      }
+      if (response?.data) {
+        setNotificationDetails({
+          isOpen: true,
+          alertTitle: 'Task',
+          alertDescription: summaryModalStatus === TASK_SUMMARY_MODAL_STATUS.CREATE
+            ? 'Task has been created successfully'
+            : 'Task has been updated successfully',
+          alertType: AlertTypeProps.SUCCESS,
+        });
+      } else {
+        createEditFailureNotification();
+      }
     } catch (e) {
       createEditFailureNotification();
       dispatch({ type: 'RESET', payload: initializer() });
-      console.log('onSubmitTaskData e()', e);
     } finally {
       if (summaryModalStatus === TASK_SUMMARY_MODAL_STATUS.CREATE) {
         handleCloseSummaryModal();
+      } else {
+        fetchTicketSummary()
+        setSummaryModalStatus(TASK_SUMMARY_MODAL_STATUS.SUMMARY);
       }
-      // Edit case - Refetch the data 
-      // else if () {
-      //   // API call to refetch the updated data
-      //   setSummaryModalStatus(TASK_SUMMARY_MODAL_STATUS.SUMMARY);
-      // }
       setSavingInProgress(false);
     }
   }
@@ -245,24 +267,23 @@ function SummaryModal({
     formatPreFilledState(
       summaryModalStatus === TASK_SUMMARY_MODAL_STATUS.CREATE
         ? initializer(initialCreateEditTaskState)
-        : taskSummary,
+        : ticketSummary,
     ),
   );
 
   useEffect(() => {
-    if (taskId) {
-      // Fetch the task data from api
-      // getSummary({ variables: { taskId } });
+    if (ticketId) {
+      fetchTicketSummary()
     }
     // eslint-disable-next-line
-  }, [taskId]);
+  }, [ticketId]);
 
   useEffect(() => {
-    if (taskSummary?.id) {
+    if (ticketSummary?.id) {
       dispatch({ type: 'RESET', payload: initializer() });
     }
     // eslint-disable-next-line
-  }, [taskSummary?.id]);
+  }, [ticketSummary?.id]);
 
   const columnData = trelloBoardColumns();
 
@@ -282,7 +303,7 @@ function SummaryModal({
       >
         <Fade in={!!summaryModalStatus}>
           <div id="transition-modal" className="modal_children_container">
-            {(!state || savingInProgress) ? (
+            {(!state || savingInProgress || fetchingTicketSummary) ? (
               <div className="loader">
                 <CircularProgress size={30} />
                 <p className="loading_text">{savingInProgress ? 'Saving' : 'Loading'}</p>
@@ -311,7 +332,7 @@ function SummaryModal({
                     </div>
                     {summaryModalStatus !== TASK_SUMMARY_MODAL_STATUS.CREATE && (
                       <div>
-                        <p className='summary_section_title'>ID: {taskId}</p>
+                        <p className='summary_section_title'>ID: {ticketId}</p>
                       </div>
                     )}
                     <div className="details_first_section">
@@ -327,19 +348,21 @@ function SummaryModal({
                                 modalStatus={summaryModalStatus}
                                 onDateChange={handleCreateDateChange}
                                 status={state[CreateEditTaskState.STATUS]}
+                                showLegend={false}
                               />
                             </div>
                             <div className="calender_section_container">
                               <SummaryModalDatePicker
-                                primaryDate={new Date(state.startDate)}
+                                primaryDate={new Date(state.endDate)}
                                 secondaryDate={new Date(state.endDate)}
-                                minDate={state.startDate}
+                                minDate={new Date(state.startDate)}
                                 text="End date"
                                 label='End date'
                                 modalStatus={summaryModalStatus}
                                 onDateChange={handleEndDateChange}
                                 isEndDate
                                 status={state[CreateEditTaskState.STATUS]}
+                                showLegend
                               />
                             </div>
                           </div>
@@ -455,7 +478,7 @@ function SummaryModal({
                 title='Delete task'
                 description={deleteTaskConfirmationModal.description}
                 isOpen={showDeleteConfirmationModal}
-                onOk={() => deleteTask(Number(taskId))}
+                onOk={() => deleteTask(Number(ticketId))}
                 okButtonText={deleteTaskConfirmationModal.okButtonText}
                 cancelButtonText='No'
                 onCancel={toggleDeleteConfirmationModel}

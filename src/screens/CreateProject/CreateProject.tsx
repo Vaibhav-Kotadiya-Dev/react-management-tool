@@ -4,17 +4,35 @@ import { DatePicker } from '@mui/lab';
 import { Work, Description, CalendarToday } from '@mui/icons-material';
 import { makeStyles } from '@mui/styles';
 import Header from 'components/Header';
+import { useNavigate } from 'react-router-dom';
+import ProjectService from 'services/Project'
+import { toast } from 'react-toastify';
+import LoadingSpinner from 'components/LoadingSpinner';
+import './CreateProject.scss'
 
 const CreateProjectForm = () => {
+  const navigate = useNavigate();
   const classes = useStyles();
-  const [projectName, setProjectName] = useState('');
-  const [description, setDescription] = useState('');
+  const [projectName, setProjectName] = useState<string>('');
+  const [description, setDescription] = useState<string>('');
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Project Created:', { projectName, description, startDate, endDate });
+    try {
+      setLoading(true)
+      await ProjectService.post({
+        name: projectName,
+        description,
+      })
+      navigate('/projects')
+      setLoading(false)
+    } catch (error) {
+      toast.error(error?.response?.data?.message);
+      setLoading(false)
+    }
   };
 
   return (
@@ -106,9 +124,12 @@ const CreateProjectForm = () => {
               type="submit"
               variant="contained"
               color="primary"
+              disabled={!projectName || !description || loading}
+              style={{ opacity: (!projectName || !description) ? '0.5' : '1' }}
               className={classes.submitButton}
             >
-              Create Project
+              {!loading && 'Create Project'}
+              {loading && <LoadingSpinner />}
             </Button>
           </form>
         </Paper>

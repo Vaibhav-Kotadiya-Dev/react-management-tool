@@ -9,13 +9,14 @@ import { trelloBoardColumns } from './helper';
 import './TrelloBoard.scss';
 import { AlertTypeProps, SnackBarNotificationProps } from 'components/SnackBarNotification/SnackBarNotification';
 import { TASK_STATUS, TASK_SUMMARY_MODAL_STATUS } from 'types/enums';
+import TicketService from 'services/Ticket'
+import { toast } from 'react-toastify';
 
 const DragDropContextRN: any = DragDropContext;
 const DroppableRN: any = Droppable;
 
 type Props = {
-  locationSlug?: string;
-  locationName?: string;
+  projectId: number;
 };
 
 function TrelloBoard(props: Props) {
@@ -26,7 +27,7 @@ function TrelloBoard(props: Props) {
     alertType: AlertTypeProps.SUCCESS,
   };
 
-  const { locationSlug, locationName } = props;
+  const { projectId } = props;
 
   const tasks = {
     loading: false,
@@ -71,17 +72,14 @@ function TrelloBoard(props: Props) {
     [TASK_STATUS.InReview]: [],
     [TASK_STATUS.Completed]: [],
   });
-  const [taskId, setTaskId] = useState<string | undefined>(undefined);
+  const [ticketId, setTicketId] = useState<number | undefined>(undefined);
   const [
     summaryModalStatus,
     setSummaryModalStatus,
   ] = useState<TASK_SUMMARY_MODAL_STATUS | undefined>();
   const [selectedColumnStatus, setSelectedColumnStatus] = useState<TASK_STATUS | undefined>();
   const [notificationDetails, setNotificationDetails] = useState<Omit<SnackBarNotificationProps, 'closeNotification'>>(closedNotificationInitialState);
-  const [loading, setLoading] = useState({
-    count: 0,
-    value: false,
-  });
+  const [loading, setLoading] = useState<boolean>(false);
 
   const columnData = trelloBoardColumns();
 
@@ -89,13 +87,32 @@ function TrelloBoard(props: Props) {
     setNotificationDetails(closedNotificationInitialState);
   }
 
-  async function updateTaskColumns() {
+  const fetchTickets = async () => {
     try {
-      if (tasks.refetch) {
-        await tasks.refetch();
+      const response = await TicketService.fetchTickets({
+        projectId,
+      })
+      if (response?.data) {
+        setDndTasks(response?.data)
       }
     } catch (error) {
-      console.log('updateTaskColumns e()', error);
+      toast.error(error?.response?.data?.message);
+    }
+  }
+
+  const fetchTicketsOnMount = async () => {
+    try {
+      setLoading(true)
+      const response = await TicketService.fetchTickets({
+        projectId,
+      })
+      if (response?.data) {
+        setDndTasks(response?.data)
+      }
+      setLoading(false)
+    } catch (error) {
+      toast.error(error?.response?.data?.message);
+      setLoading(false)
     }
   }
 
@@ -115,29 +132,30 @@ function TrelloBoard(props: Props) {
       [destinationColumn]: preState && [{ ...movingCard }, ...preState[destinationColumn]],
     }));
     try {
-      // await setTaskStatus({
-      //   variables: {
-      //     taskId: Number(movingCard?.id),
-
-      //     status: destination.droppableId as TASK_STATUS,
-      //     isOwnerCheckSurpassed: true,
-      //   },
-      // });
+      await TicketService.updateTicket({
+        startDate: movingCard?.startDate,
+        title: movingCard?.title, 
+        description: movingCard?.description,
+        endDate: movingCard?.endDate,
+        status: destination.droppableId,
+        projectId,
+        ticketId: movingCard?.id,
+      })
     } catch (error) {
       console.log('e onDragEnd()', error);
     } finally {
-      updateTaskColumns();
+      fetchTickets();
     }
   }
 
-  function handleTaskCardClick(id: string | undefined, columnStatus: TASK_STATUS) {
+  function handleTaskCardClick(id: number | undefined, columnStatus: TASK_STATUS) {
     if (id) {
       setSummaryModalStatus(TASK_SUMMARY_MODAL_STATUS.SUMMARY);
       setSelectedColumnStatus(columnStatus);
     } else {
       setSummaryModalStatus(undefined);
     }
-    setTaskId(id);
+    setTicketId(id);
   }
 
   function initiateAddNewTask(status: TASK_STATUS) {
@@ -146,44 +164,25 @@ function TrelloBoard(props: Props) {
   }
 
   function handleCloseSummaryModal(isFromEdit?: boolean) {
-    console.log({ isFromEdit });
     if (!isFromEdit) {
-      setTaskId(undefined);
+      setTicketId(undefined);
       setSummaryModalStatus(undefined);
       setSelectedColumnStatus(undefined);
-      updateTaskColumns();
+      fetchTickets();
     } else {
       setSummaryModalStatus(TASK_SUMMARY_MODAL_STATUS.SUMMARY);
     }
   }
 
   useEffect(() => {
-    if (!taskId) {
-      updateTaskColumns();
+    if (!ticketId) {
+      fetchTickets();
     }
     // eslint-disable-next-line
-  }, [taskId]);
+  }, [ticketId]);
 
   useEffect(() => {
-    if (!tasks.loading) {
-      setLoading(prevLoading => ({
-        count: prevLoading.count,
-        value: false,
-      }));
-    } else if (tasks.loading && loading.count === 0) {
-      setLoading({
-        count: 1,
-        value: true,
-      });
-    }
-  }, [tasks.loading, loading.count]);
-
-  useEffect(() => {
-    if (tasks?.data?.groupTasksInDCByStatus) {
-      setDndTasks(
-        tasks?.data?.groupTasksInDCByStatus as any,
-      );
-    }
+    fetchTicketsOnMount()
     // eslint-disable-next-line
   }, []);
 
@@ -192,12 +191,12 @@ function TrelloBoard(props: Props) {
       <section className="trello_container">
         <SnackBarNotification {...{ ...notificationDetails, closeNotification }} />
         <div className="different_board_column">
-          {loading.value ? (
+          {loading ? (
             <div className="loader_for_task">
               <CircularProgress />
             </div>
           ) : (
-            columnData.map(column => (
+            columnData?.map(column => (
               <div className="single_column" key={column.name}>
                 <div className="single_column__header mb-3">
                   <img className="single_column__header__image" src={column.icon} alt="watching" />
@@ -223,8 +222,8 @@ function TrelloBoard(props: Props) {
                           dndTasks[column.status].map(
                             (task, index) => !!task && (
                               <TaskCard
-                                key={task.id}
-                                id={task.id}
+                                key={task.id?.toString()}
+                                id={task.id?.toString()}
                                 title={task.title}
                                 onClick={handleTaskCardClick}
                                 index={index}
@@ -255,14 +254,13 @@ function TrelloBoard(props: Props) {
         </div>
         {summaryModalStatus && (
           <SummaryModal
-            locationSlug={locationSlug}
-            locationName={locationName}
-            taskId={taskId}
+            ticketId={ticketId}
             summaryModalStatus={summaryModalStatus}
             setNotificationDetails={setNotificationDetails}
             createTaskInitialStatus={selectedColumnStatus}
             handleCloseSummaryModal={handleCloseSummaryModal}
             setSummaryModalStatus={setSummaryModalStatus}
+            projectId={projectId}
           />
         )}
       </section>

@@ -13,6 +13,7 @@ import CreateProject from 'screens/CreateProject';
 import Login from 'screens/Login';
 import SignUp from 'screens/SignUp';
 import AuthWrapper from 'screens/AuthWrapper';
+import Logout from 'screens/Logout';
 
 const RoutesStack = () => {
   return (
@@ -26,6 +27,7 @@ const RoutesStack = () => {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/sign-up" element={<SignUp />} />
+          <Route path="/logout" element={<Logout />} />
           <Route path="/board" element={<AuthWrapper component={Board} />} />
           <Route path="/create-project" element={<AuthWrapper component={CreateProject} />} />
           <Route path="/projects" element={<AuthWrapper component={ProjectList} />} />

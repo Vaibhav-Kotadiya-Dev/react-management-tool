@@ -37,7 +37,7 @@ function SnackBarNotification(props: SnackBarNotificationProps) {
   } = props;
   return (
     <Snackbar
-      style={{ marginRight: '100px' }}
+      style={{ marginRight: '0px' }}
       open={isOpen}
       autoHideDuration={autoHideDuration}
       onClose={closeNotification}

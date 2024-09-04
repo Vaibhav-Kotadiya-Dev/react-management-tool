@@ -22,8 +22,10 @@ type SummaryModalDatePickerProps = {
   onDateChange: (date: any) => void;
   showTimePicker?: boolean;
   minDate?: Date;
+  maxDate?: Date;
   isEndDate?: boolean,
   label?: string
+  showLegend?: boolean,
 };
 
 function SummaryModalDatePicker(props: SummaryModalDatePickerProps) {
@@ -37,6 +39,8 @@ function SummaryModalDatePicker(props: SummaryModalDatePickerProps) {
     status,
     isEndDate,
     label,
+    maxDate,
+    showLegend,
   } = props;
   function handleTimePicker(date: any) {
     const dateWithTimeUpdate = new Date(primaryDate);
@@ -51,7 +55,7 @@ function SummaryModalDatePicker(props: SummaryModalDatePickerProps) {
     && differenceInDays(
       (new Date(primaryDate)),
       (new Date()),
-    ) < 3);
+    ) < 1);
   return (
     <>
       <div className="calender_section">
@@ -75,6 +79,7 @@ function SummaryModalDatePicker(props: SummaryModalDatePickerProps) {
               <DatePicker
                 format="MM/dd/yyyy"
                 minDate={minDate}
+                maxDate={maxDate}
                 value={primaryDate}
                 onChange={onDateChange}
                 sx={styles.datePicker}
@@ -96,7 +101,7 @@ function SummaryModalDatePicker(props: SummaryModalDatePickerProps) {
         <>
           <p className="create_date">{text} </p>
           <p className={`time_passed ${isDueDateArriving ? 'alert_end_date' : ''}`}>
-            Since {' '}
+            {showLegend ? 'Due by ' : ''}
             {getTranslatedDateTimeValue(primaryDate, 'eee dd')} of {' '}
             {getTranslatedDateTimeValue(primaryDate, 'MMM')}
           </p>

@@ -1,11 +1,9 @@
 import React from 'react';
 import { useLocation, Navigate } from 'react-router-dom';
+import session from 'utils/session'
 
 const AuthWrapper = (props: any) => {
-  const {
-    user,
-    isAuthenticating,
-  } = props;
+  const token = session.getValue('token')
 
   const location = useLocation();
 
@@ -15,12 +13,7 @@ const AuthWrapper = (props: any) => {
     window.location.replace('/logout');
   }
 
-  if (isAuthenticating) {
-    return <p style={{ textAlign: 'center', marginTop: '20px' }}>Loading...</p>;
-  }
-
-  // if (user) return <props.component />;
-  if (true) return <props.component />;
+  if (token) return <props.component />;
 
   return <Navigate to="/login" replace />;
 };

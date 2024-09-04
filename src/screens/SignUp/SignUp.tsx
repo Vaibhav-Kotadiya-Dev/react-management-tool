@@ -1,28 +1,62 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { TextField, Button, Container, Typography, Paper, IconButton, InputAdornment, Link } from '@mui/material';
 import { Visibility, VisibilityOff, Email, Person } from '@mui/icons-material';
 import { makeStyles } from '@mui/styles';
+import AuthService from 'services/Login'
+import LoadingSpinner from 'components/LoadingSpinner';
+import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
+import session from 'utils/session';
 
 const SignUpForm = () => {
+  const navigate = useNavigate();
   const classes = useStyles();
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
+  const [firstName, setFirstName] = useState<string>('');
+  const [lastName, setLastName] = useState<string>('');
+  const [email, setEmail] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
+  const [confirmPassword, setConfirmPassword] = useState<string>('');
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [errorText, setErrorText] = useState<string>('');
+
+  const token = session.getValue('token')
+
+  useEffect(() => {
+    if (token) {
+      navigate('/', { replace: true })
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const handleClickShowPassword = () => setShowPassword(!showPassword);
+
   const handleMouseDownPassword = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (password === confirmPassword) {
-      console.log('Sign Up:', { firstName, lastName, email, password });
+      setLoading(true)
+      try {
+        await AuthService.signUp({
+          firstName,
+          lastName,
+          email,
+          password
+        })
+        setLoading(false)
+        setErrorText('')
+        toast.success("Registered successful");
+        navigate('/login')
+      } catch (error) {
+        toast.error(error?.response?.data?.message);
+        setLoading(false)
+        setErrorText('')
+      }
     } else {
-      console.error('Passwords do not match');
+      setErrorText('Passwords do not match')
     }
   };
 
@@ -38,7 +72,6 @@ const SignUpForm = () => {
             margin="normal"
             value={firstName}
             onChange={(e) => setFirstName(e.target.value)}
-            className={classes.textField}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
@@ -54,7 +87,6 @@ const SignUpForm = () => {
             margin="normal"
             value={lastName}
             onChange={(e) => setLastName(e.target.value)}
-            className={classes.textField}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
@@ -70,7 +102,6 @@ const SignUpForm = () => {
             margin="normal"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className={classes.textField}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
@@ -87,7 +118,6 @@ const SignUpForm = () => {
             margin="normal"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className={classes.textField}
             InputProps={{
               endAdornment: (
                 <InputAdornment position="end">
@@ -103,6 +133,7 @@ const SignUpForm = () => {
             }}
           />
           <TextField
+            id="outlined-error-helper-text"
             label="Confirm Password"
             type={showPassword ? 'text' : 'password'}
             variant="outlined"
@@ -110,7 +141,6 @@ const SignUpForm = () => {
             margin="normal"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-            className={classes.textField}
             InputProps={{
               endAdornment: (
                 <InputAdornment position="end">
@@ -124,14 +154,18 @@ const SignUpForm = () => {
                 </InputAdornment>
               ),
             }}
+            error={!!errorText}
+            helperText={errorText}
           />
           <Button
             type="submit"
             variant="contained"
             color="primary"
             className={classes.submitButton}
+            disabled={loading}
           >
-            Sign Up
+            {!loading && 'Sign Up'}
+            {loading && <LoadingSpinner />}
           </Button>
         </form>
         <Typography variant="body2" className={classes.switchText}>
@@ -190,6 +224,7 @@ const useStyles = makeStyles({
     '&:hover': {
       backgroundColor: '#303f9f !important',
     },
+    marginTop: '20px !important'
   },
   switchText: {
     marginTop: '20px !important',

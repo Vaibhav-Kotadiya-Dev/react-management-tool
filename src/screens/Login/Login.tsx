@@ -1,22 +1,66 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { TextField, Button, Container, Typography, Paper, IconButton, InputAdornment, Link } from '@mui/material';
 import { Visibility, VisibilityOff, Email } from '@mui/icons-material';
 import { makeStyles } from '@mui/styles';
+import AuthService from 'services/Login'
+import LoadingSpinner from 'components/LoadingSpinner';
+import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
+import session from 'utils/session';
+import { useDispatch } from 'react-redux';
+import { setUser } from 'store/User';
 
 const LoginForm = () => {
+  const navigate = useNavigate();
+  const dispatch = useDispatch()
   const classes = useStyles();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
+  const token = session.getValue('token')
+
+  useEffect(() => {
+    if (token) {
+      navigate('/', { replace: true })
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const handleClickShowPassword = () => setShowPassword(!showPassword);
+
   const handleMouseDownPassword = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Login:', { email, password });
+    try {
+      setLoading(true)
+      const response = await AuthService.login({
+        email,
+        password,
+      })
+
+      if (response?.data) {
+        session.setValue('token', JSON.stringify(response?.data?.accessToken))
+        setLoading(false)
+        dispatch(setUser({
+          token: response?.data?.accessToken,
+          email: response?.data?.user?.email,
+          name: (response?.data?.user?.firstName ?? '') + ' ' + (response?.data?.user?.lastName ?? ''),
+          slug: response?.data?.user?.slug,
+          id: response?.data?.user?.id,
+        }))
+        navigate('/', { replace: true })
+      } else {
+        toast.error('Something went wrong!');
+        setLoading(false)
+      }
+    } catch (error) {
+      setLoading(false)
+      toast.error(error?.response?.data?.message);
+    }
   };
 
   return (
@@ -31,7 +75,6 @@ const LoginForm = () => {
             margin="normal"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className={classes.textField}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
@@ -48,7 +91,6 @@ const LoginForm = () => {
             margin="normal"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className={classes.textField}
             InputProps={{
               endAdornment: (
                 <InputAdornment position="end">
@@ -68,8 +110,10 @@ const LoginForm = () => {
             variant="contained"
             color="primary"
             className={classes.submitButton}
+            disabled={loading}
           >
-            Login
+            {!loading && 'Login'}
+            {loading && <LoadingSpinner />}
           </Button>
         </form>
         <Typography variant="body2" className={classes.switchText}>
@@ -128,6 +172,7 @@ const useStyles = makeStyles({
     '&:hover': {
       backgroundColor: '#303f9f !important',
     },
+    marginTop: '20px !important'
   },
   switchText: {
     marginTop: '20px !important',

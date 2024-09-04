@@ -1,11 +1,9 @@
 import React, { FC, useState } from 'react';
 import LinkDropdown from 'components/LinkDropdown';
-
 import { ReactComponent as ProfileIcon } from 'assets/icons/profile.svg';
 import { ReactComponent as LogoutIcon } from 'assets/icons/logout.svg';
-
+import { useSelector } from 'react-redux';
 import './Settings.scss';
-// import { useSelector } from 'react-redux';
 
 type Props = {
   userType?: string;
@@ -15,12 +13,7 @@ type Props = {
 
 const Settings: FC<Props> = (props: Props) => {
   const [isClicked, setClicked] = useState(false);
-  // const user = useSelector((state: any) => state.get('user'))?.toJS();
-  const user = {
-    picture: '',
-    name: 'Test',
-    email: 'test@gmail.com'
-  };
+  const user = useSelector((state: any) => state.user?.data);
 
   function onVisibleChange(isVisible: boolean) {
     setClicked(isVisible);

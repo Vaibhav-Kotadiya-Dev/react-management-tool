@@ -1,6 +1,7 @@
 import React from 'react';
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import './ConfirmationModalStyle.scss';
+import LoadingSpinner from 'components/LoadingSpinner';
 
 type Props = {
   isOpen: boolean;
@@ -58,11 +59,7 @@ function ConfirmationModal(props: Props) {
           </Button>
           <Button className="confirmationModalContainer__okBtn" onClick={onOk} autoFocus style={okButtonStyle} disabled={isOkButtonLoading}>
             {isOkButtonLoading ? (
-              <div
-                className="loading-spinner confirmationModalContainer__okBtn__loader"
-              >
-                <div className="spinner" />
-              </div>
+              <LoadingSpinner color='#3f51b5' size={20} />
             ) : (
               <>
                 {okButtonIcon && <img src={okButtonIcon} alt="delete" />}

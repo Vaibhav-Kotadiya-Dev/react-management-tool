@@ -4,9 +4,9 @@ import './TaskCard.scss';
 import { TASK_STATUS } from 'types/enums';
 
 type Props = {
-  id: string;
+  id: number;
   title: string;
-  onClick: (id: string, columnStatus: TASK_STATUS) => void;
+  onClick: (id: number, columnStatus: TASK_STATUS) => void;
   index: number;
   columnStatus: TASK_STATUS;
 };

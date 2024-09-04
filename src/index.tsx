@@ -4,12 +4,18 @@ import './index.css';
 import Routes from './routes';
 import reportWebVitals from './reportWebVitals';
 import { Provider } from 'react-redux';
-import { store } from 'store';
+import { store, persistor } from 'store';
+import { ToastContainer } from 'react-toastify';
+import { PersistGate } from 'redux-persist/integration/react';
+import 'react-toastify/dist/ReactToastify.css';
 
 const App = () => {
   return (
     <Provider store={store}>
-      <Routes />
+      <PersistGate loading={null} persistor={persistor}>
+        <Routes />
+        <ToastContainer />
+      </PersistGate>
     </Provider>
   );
 };
