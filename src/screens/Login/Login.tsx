@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { TextField, Button, Container, Typography, Paper, IconButton, InputAdornment, Link } from '@mui/material';
+import { TextField, Button, Container, Typography, Paper, IconButton, InputAdornment } from '@mui/material';
 import { Visibility, VisibilityOff, Email } from '@mui/icons-material';
 import { makeStyles } from '@mui/styles';
 import AuthService from 'services/Login'
@@ -7,6 +7,7 @@ import LoadingSpinner from 'components/LoadingSpinner';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import session from 'utils/session';
+import { Link } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { setUser } from 'store/User';
 
@@ -117,7 +118,7 @@ const LoginForm = () => {
           </Button>
         </form>
         <Typography variant="body2" className={classes.switchText}>
-          Don’t have an account? <Link href="/sign-up">Sign Up</Link>
+          Don’t have an account? <Link to="/sign-up">Sign Up</Link>
         </Typography>
       </Paper>
     </Container>

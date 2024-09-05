@@ -25,7 +25,7 @@ instance.interceptors.request.use(
 
 instance.interceptors.response.use(
   function (response) {
-    if (response.status === 401) {
+    if (response?.status === 401) {
         window.location.replace('/logout');
       throw new Error(response?.data?.message);
     }

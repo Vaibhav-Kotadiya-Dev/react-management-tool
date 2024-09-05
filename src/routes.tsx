@@ -17,7 +17,7 @@ import Logout from 'screens/Logout';
 
 const RoutesStack = () => {
   return (
-    <Router>
+    <Router basename='/taskmanagementapp'>
       <Suspense
         fallback={(
           <LoadingSpinner />

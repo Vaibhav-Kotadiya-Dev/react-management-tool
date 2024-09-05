@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { TextField, Button, Container, Typography, Paper, IconButton, InputAdornment, Link } from '@mui/material';
+import { TextField, Button, Container, Typography, Paper, IconButton, InputAdornment } from '@mui/material';
 import { Visibility, VisibilityOff, Email, Person } from '@mui/icons-material';
 import { makeStyles } from '@mui/styles';
 import AuthService from 'services/Login'
 import LoadingSpinner from 'components/LoadingSpinner';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import session from 'utils/session';
 
 const SignUpForm = () => {
@@ -169,7 +170,7 @@ const SignUpForm = () => {
           </Button>
         </form>
         <Typography variant="body2" className={classes.switchText}>
-          Already have an account? <Link href="/login">Login</Link>
+          Already have an account? <Link to="/login">Login</Link>
         </Typography>
       </Paper>
     </Container>
