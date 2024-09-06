@@ -7,7 +7,7 @@ const instance = axios.create({
     Accept: 'application/json',
     'Content-Type': 'application/json',
   },
-  timeout: 3000,
+  timeout: 30000,
 })
 
 instance.interceptors.request.use(
@@ -26,12 +26,16 @@ instance.interceptors.request.use(
 instance.interceptors.response.use(
   function (response) {
     if (response?.status === 401) {
-        window.location.replace('/logout');
+        window.location.replace('/taskmanagementapp/logout');
       throw new Error(response?.data?.message);
     }
     return response
   },
   function (error) {
+    if (error?.response?.status === 401) {
+      window.location.replace('/taskmanagementapp/logout');
+      throw new Error(error?.message);
+    }
     return Promise.reject(error)
   },
 )

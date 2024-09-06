@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import React, { useEffect, useReducer, useState, Dispatch, SetStateAction } from 'react';
+import React, { useEffect, useReducer, useMemo, useState, Dispatch, SetStateAction } from 'react';
 import {
   Backdrop,
   CircularProgress,
@@ -41,6 +41,7 @@ type props = {
   setNotificationDetails: Dispatch<SetStateAction<any>>;
   setSummaryModalStatus: Dispatch<SetStateAction<TASK_SUMMARY_MODAL_STATUS | undefined>>;
   handleCloseSummaryModal: (isFromEdit?: boolean) => void | VoidFunction;
+  fetchTickets?: any;
 };
 
 function SummaryModal({
@@ -51,8 +52,8 @@ function SummaryModal({
   handleCloseSummaryModal,
   setSummaryModalStatus,
   projectId,
+  fetchTickets,
 }: props) {
-  const descriptionMaxLength = 1000;
   const titleMaxLength = 500;
   const textAreaAlertLength = 30;
 
@@ -118,6 +119,7 @@ function SummaryModal({
         });
         toggleDeleteConfirmationModel();
         handleCloseSummaryModal();
+        fetchTickets?.()
       }
     } catch (err) {
       setDeleteTaskConfirmationModal(prevState => ({
@@ -246,6 +248,7 @@ function SummaryModal({
         fetchTicketSummary()
         setSummaryModalStatus(TASK_SUMMARY_MODAL_STATUS.SUMMARY);
       }
+      fetchTickets?.()
       setSavingInProgress(false);
     }
   }
@@ -262,14 +265,15 @@ function SummaryModal({
     handleCloseSummaryModal();
   }
 
-  const isSaveButtonDisabled = isEqual(
-    state,
-    formatPreFilledState(
-      summaryModalStatus === TASK_SUMMARY_MODAL_STATUS.CREATE
-        ? initializer(initialCreateEditTaskState)
-        : ticketSummary,
-    ),
-  );
+  const isSaveButtonDisabled = useMemo(() => {
+    let flag: boolean = false
+    if (summaryModalStatus === TASK_SUMMARY_MODAL_STATUS.CREATE) {
+      flag = !state?.title || !state?.description
+    } else {
+      flag = isEqual(state, formatPreFilledState(ticketSummary)) || !state?.title || !state?.description
+    }
+    return flag
+  }, [state, summaryModalStatus, ticketSummary])
 
   useEffect(() => {
     if (ticketId) {
@@ -441,16 +445,12 @@ function SummaryModal({
                               Description
                             </div>
                             <TextareaAutosize
-                              maxLength={descriptionMaxLength}
                               onChange={handleDescriptionChange}
                               className="customTextarea"
                               value={state?.description}
                               placeholder='Enter description'
                               onBlur={handleDescriptionOnBlur}
                             />
-                            <div className={`words_left ${descriptionMaxLength - state?.description?.length < textAreaAlertLength ? 'red' : ''}`}>
-                              {` ${state?.description?.length}/${descriptionMaxLength} `}
-                            </div>
                           </>
                         )}
                     </div>

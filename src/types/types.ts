@@ -21,6 +21,12 @@ export type CreateProjectParams = {
   description: string;
 }
 
+export type UpdateProjectParams = {
+  projectId: number;
+  name: string;
+  description: string;
+}
+
 export type CreateTicketParams = {
   startDate: string;
   title: string; 

@@ -9,15 +9,11 @@
 }
 
 .breadcrumb-item {
-  color: #0077b6;
+  color: #03045e;
   padding: 0 10px;
   font-size: 16px;
-  cursor: pointer;
+  cursor: default;
   transition: color 0.3s ease;
-
-  &:hover {
-      color: #023e8a;
-  }
 
   &.current {
       color: #03045e;

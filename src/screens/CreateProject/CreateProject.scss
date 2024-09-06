@@ -1,0 +1,16 @@
+.headerWrap{
+  display: flex;
+  margin-bottom: 16px;
+  align-items: center;
+}
+
+.backButtonContainer {
+  display: flex;
+  padding: 12px 16px;
+  justify-content: center;
+  align-items: center;
+  border-radius: 4px;
+  border: 1px solid  #D6D6D6;
+  background: #FFF;
+  cursor: pointer;
+}
