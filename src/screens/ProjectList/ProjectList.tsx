@@ -20,7 +20,7 @@ const ProjectList = () => {
   const fetchProjects = async () => {
     try {
       setLoading(true)
-      const response = await ProjectService.get()
+      const response = await ProjectService.getAllProjects()
       setProjects(response?.data)
       setLoading(false)
     } catch (error) {
@@ -39,6 +39,10 @@ const ProjectList = () => {
 
   const viewProject = (id: number, name: string) => {
     navigate('/board', { state: { projectId: id, projectName: name } })
+  }
+
+  const editProject = (projectDetails: Project) => {
+    navigate('/create-project', { state: { projectDetails, mode: 'edit' } })
   }
 
   return (
@@ -60,7 +64,11 @@ const ProjectList = () => {
           {!loading && (
             projects?.map(project => (
               <Grid item xs={12} sm={6} md={4} key={project?.id}>
-                <ProjectCard viewProject={() => viewProject(project?.id, project?.name)} project={project} />
+                <ProjectCard 
+                  viewProject={() => viewProject(project?.id, project?.name)} 
+                  editProject={() => editProject(project)} 
+                  project={project} 
+                />
               </Grid> 
             ))
           )}

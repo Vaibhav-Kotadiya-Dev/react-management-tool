@@ -7,9 +7,11 @@ import { Provider } from 'react-redux';
 import { store, persistor } from 'store';
 import { ToastContainer } from 'react-toastify';
 import { PersistGate } from 'redux-persist/integration/react';
+import useDocumentTitle from 'utils/hooks/useDocumentTitle';
 import 'react-toastify/dist/ReactToastify.css';
 
 const App = () => {
+  useDocumentTitle()
   return (
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>

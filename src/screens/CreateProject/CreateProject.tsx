@@ -4,17 +4,20 @@ import { DatePicker } from '@mui/lab';
 import { Work, Description, CalendarToday } from '@mui/icons-material';
 import { makeStyles } from '@mui/styles';
 import Header from 'components/Header';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import ProjectService from 'services/Project'
 import { toast } from 'react-toastify';
 import LoadingSpinner from 'components/LoadingSpinner';
 import './CreateProject.scss'
+import ImageLinks from 'utils/ImageLinks';
 
 const CreateProjectForm = () => {
   const navigate = useNavigate();
+  const location: any = useLocation();
+  const editMode = location?.state?.mode === 'edit'
   const classes = useStyles();
-  const [projectName, setProjectName] = useState<string>('');
-  const [description, setDescription] = useState<string>('');
+  const [projectName, setProjectName] = useState<string>(location?.state?.projectDetails?.name ?? '');
+  const [description, setDescription] = useState<string>(location?.state?.projectDetails?.description ?? '');
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
@@ -23,10 +26,18 @@ const CreateProjectForm = () => {
     e.preventDefault();
     try {
       setLoading(true)
-      await ProjectService.post({
-        name: projectName,
-        description,
-      })
+      if (editMode) {
+        await ProjectService.updateProject({
+          name: projectName,
+          description,
+          projectId: location?.state?.projectDetails?.id,
+        })
+      } else {
+        await ProjectService.createProject({
+          name: projectName,
+          description,
+        })
+      }
       navigate('/projects')
       setLoading(false)
     } catch (error) {
@@ -35,12 +46,21 @@ const CreateProjectForm = () => {
     }
   };
 
+  const goBack = () => {
+    navigate('/projects')
+  };
+
   return (
     <div>
       <Header />
       <Container className={classes.root}>
         <Paper className={classes.paper} elevation={3}>
-          <Typography variant="h4" className={classes.title}>Create New Project</Typography>
+          <div className='headerWrap'>
+            <div role="button" className="backButtonContainer" onClick={goBack}>
+              <img alt="backArrow" src={ImageLinks.leftArrowIcon} />
+            </div>
+            <Typography variant="h4" className={classes.title}>{editMode ? 'Edit Project' : 'Create New Project'}</Typography>
+          </div>
           <form onSubmit={handleSubmit}>
             <TextField
               label="Project Name"
@@ -128,7 +148,7 @@ const CreateProjectForm = () => {
               style={{ opacity: (!projectName || !description) ? '0.5' : '1' }}
               className={classes.submitButton}
             >
-              {!loading && 'Create Project'}
+              {!loading && (editMode ? 'Edit Project' : 'Create Project')}
               {loading && <LoadingSpinner />}
             </Button>
           </form>
@@ -155,7 +175,7 @@ const useStyles = makeStyles({
     width: '100% !important',
   },
   title: {
-    marginBottom: '20px !important',
+    marginLeft: '20px !important',
     textAlign: 'center',
     color: '#3f51b5 !important',
     fontWeight: 'bold !important',

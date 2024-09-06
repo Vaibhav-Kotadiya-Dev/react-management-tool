@@ -29,43 +29,6 @@ function TrelloBoard(props: Props) {
 
   const { projectId } = props;
 
-  const tasks = {
-    loading: false,
-    data: {
-      groupTasksInDCByStatus: {
-        "OPEN": [
-          {
-            "id": "895576",
-            "description": "Test description",
-            "title": "Test title",
-            "endDate": "2024-10-23T00:07:57.000Z",
-            "status": "IN_PROGRESS",
-          },
-        ],
-        "IN_PROGRESS": [
-          {
-            "id": "895575",
-            "description": "Test description",
-            "title": "Test title",
-            "endDate": "2024-04-23T00:07:57.000Z",
-            "status": "IN_PROGRESS",
-          },
-        ],
-        "IN_REVIEW": [
-          {
-            "id": "895571",
-            "description": "Test description",
-            "title": "Test title",
-            "endDate": "2024-04-23T00:07:57.000Z",
-            "status": "IN_PROGRESS",
-          },
-        ],
-        "COMPLETED": [],
-      }
-    },
-    refetch: null,
-  }
-
   const [dndTasks, setDndTasks] = useState<any>({
     [TASK_STATUS.Open]: [],
     [TASK_STATUS.InProgress]: [],
@@ -168,18 +131,10 @@ function TrelloBoard(props: Props) {
       setTicketId(undefined);
       setSummaryModalStatus(undefined);
       setSelectedColumnStatus(undefined);
-      fetchTickets();
     } else {
       setSummaryModalStatus(TASK_SUMMARY_MODAL_STATUS.SUMMARY);
     }
   }
-
-  useEffect(() => {
-    if (!ticketId) {
-      fetchTickets();
-    }
-    // eslint-disable-next-line
-  }, [ticketId]);
 
   useEffect(() => {
     fetchTicketsOnMount()
@@ -261,6 +216,7 @@ function TrelloBoard(props: Props) {
             handleCloseSummaryModal={handleCloseSummaryModal}
             setSummaryModalStatus={setSummaryModalStatus}
             projectId={projectId}
+            fetchTickets={fetchTickets}
           />
         )}
       </section>
